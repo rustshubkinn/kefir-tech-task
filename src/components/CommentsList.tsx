@@ -3,6 +3,7 @@ import Comment from './Comment';
 import styled from 'styled-components';
 import { Likes } from './Likes';
 import { useCommentsAndAuthors } from 'src/hooks/useCommentsAndAuthors';
+import { Loader } from './Loader';
 
 const CommentsListSection = styled.section`
   padding: 2rem 0;
@@ -74,6 +75,7 @@ const CommentsList: React.FC = () => {
   } = useCommentsAndAuthors();
 
   const isLastPage = page === response?.pagination.total_pages;
+
   const renderButtonText = useMemo(() => {
     if (isError) {
       return 'Попробовать еще раз';
@@ -89,7 +91,7 @@ const CommentsList: React.FC = () => {
   }, [isError, isLastPage, isLoading]);
 
   return isLoading ? (
-    <div>Loading</div>
+    <Loader />
   ) : (
     <CommentsListSection>
       <CommentSectionHeader>
