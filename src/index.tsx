@@ -1,21 +1,25 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import useMockAdapter from "src/api/useMockAdapter";
-import "./index.css";
-import App from "./App";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import useMockAdapter from './api/useMockAdapter';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const root = ReactDOM.createRoot(
-    document.getElementById("root") as HTMLElement,
+  document.getElementById('root') as HTMLElement
 );
 
-const RootApp = () => {
-    useMockAdapter();
+const queryClient = new QueryClient();
 
-    return <App />;
+const RootApp = () => {
+  useMockAdapter();
+
+  return <App />;
 };
 
 root.render(
-    <React.StrictMode>
-        <RootApp />
-    </React.StrictMode>,
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <RootApp />
+    </QueryClientProvider>
+  </React.StrictMode>
 );
