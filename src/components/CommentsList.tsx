@@ -1,30 +1,79 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { buildCommentsTree } from '../utils/buildCommentsTree';
+import React, { useMemo } from 'react';
 import Comment from './Comment';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import getCommentsRequest from 'src/api/comments/getCommentsRequest';
-import { IComment, ICommentsResponse } from 'src/types';
-import { useComments } from 'src/context/CommentsContext';
+import styled from 'styled-components';
+import { Likes } from './Likes';
+import { useCommentsAndAuthors } from 'src/hooks/useCommentsAndAuthors';
+
+const CommentsListSection = styled.section`
+  padding: 2rem 0;
+  margin: 0 auto;
+  width: 90vw;
+
+  @media (min-width: 620px) {
+    padding: 3rem;
+    width: 75vw;
+  }
+
+  @media (min-width: 968px) {
+    padding: 3rem;
+    width: 55vw;
+  }
+`;
+
+const CommentSectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #767676;
+
+  p {
+    margin: 0;
+    font-weight: 600;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  min-height: 16px;
+  margin: 0;
+  font-weight: 600;
+  text-align: center;
+  color: #d44f4f;
+`;
+
+const LoadMoreButtonWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+`;
+
+const LoadMoreButton = styled.button`
+  width: 234px;
+  height: 36px;
+  color: #fff;
+  background: #313439;
+  border-radius: 4px;
+  border: none;
+  text-align: center;
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+`;
 
 const CommentsList: React.FC = () => {
-  const [page, setPage] = useState(1);
-  const { state, dispatch } = useComments();
-  const [comments, setComments] = useState<IComment[]>([]);
   const {
-    data: response,
-    error,
+    comments,
+    authors,
     isLoading,
     isError,
     isFetching,
-    refetch,
-  } = useQuery<ICommentsResponse, Error>({
-    queryKey: ['comments', page],
-    queryFn: () => getCommentsRequest(page),
-    placeholderData: keepPreviousData,
-  });
-  const commentsTree = useMemo(() => buildCommentsTree(comments), [comments]);
-  const isLastPage = page === response?.pagination.total_pages;
+    error,
+    loadMore,
+    page,
+    response,
+    totalLikes,
+  } = useCommentsAndAuthors();
 
+  const isLastPage = page === response?.pagination.total_pages;
   const renderButtonText = useMemo(() => {
     if (isError) {
       return 'Попробовать еще раз';
@@ -39,44 +88,35 @@ const CommentsList: React.FC = () => {
     }
   }, [isError, isLastPage, isLoading]);
 
-  useEffect(() => {
-    if (page > 1) {
-      refetch();
-    }
-  }, [page, refetch]);
+  return isLoading ? (
+    <div>Loading</div>
+  ) : (
+    <CommentsListSection>
+      <CommentSectionHeader>
+        {comments.length === 0 ? (
+          'Комментариев нет'
+        ) : (
+          <p>{comments.length} комментариев</p>
+        )}
+        <Likes likesCount={totalLikes} disabled />
+      </CommentSectionHeader>
+      {isLoading && <div>Загружаем комментарии...</div>}
+      {comments &&
+        comments.map((comment) => (
+          <Comment key={comment.id} comment={comment} authors={authors} />
+        ))}
+      {isError && (
+        <ErrorMessage>
+          Error loading comments: {error ? error.message : 'Unknown error'}
+        </ErrorMessage>
+      )}
 
-  useEffect(() => {
-    if (response) {
-      const newTotalLikes = response.data.reduce(
-        (totalLikes, comment) => totalLikes + comment.likes,
-        0
-      );
-      dispatch({
-        type: 'UPDATE_TOTAL_LIKES',
-        payload: { totalLikes: newTotalLikes },
-      });
-      setComments((prevComments) => [...prevComments, ...response.data]);
-    }
-  }, [response, dispatch]);
-
-  const loadMore = () => {
-    setPage((prevPage) => prevPage + 1);
-  };
-
-  if (isLoading && !comments.length) return <div>Loading...</div>;
-
-  if (isError) return <div>Error loading comments: {error.message}</div>;
-
-  return (
-    <div>
-      <div>Total Likes: {state.totalLikes}</div>
-      {commentsTree.map((comment) => (
-        <Comment key={comment.id} comment={comment} />
-      ))}
-      <button onClick={loadMore} disabled={isFetching || isLastPage}>
-        {renderButtonText}
-      </button>
-    </div>
+      <LoadMoreButtonWrapper>
+        <LoadMoreButton onClick={loadMore} disabled={isFetching || isLastPage}>
+          {renderButtonText}
+        </LoadMoreButton>
+      </LoadMoreButtonWrapper>
+    </CommentsListSection>
   );
 };
 

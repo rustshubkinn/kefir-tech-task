@@ -5,10 +5,14 @@ import {
   ReactNode,
   Dispatch,
 } from 'react';
+import { IAuthors, IComment } from 'src/types';
 
 interface CommentsState {
-  likes: { [key: string]: boolean };
+  likes: { [commentId: string]: number };
   totalLikes: number;
+  authors: IAuthors;
+  comments: IComment[];
+  page: number;
 }
 
 interface ToggleLikeAction {
@@ -21,12 +25,54 @@ interface ToggleUpdateTotalLikesAction {
   payload: { totalLikes: number };
 }
 
-type CommentsAction = ToggleLikeAction | ToggleUpdateTotalLikesAction;
+interface AddCommentsAction {
+  type: 'ADD_COMMENTS';
+  payload: { comments: IComment[] };
+}
+
+interface AddAuthorsAction {
+  type: 'ADD_AUTHORS';
+  payload: { authors: IAuthors };
+}
+
+interface IncrementPageAction {
+  type: 'INCREMENT_PAGE';
+}
+
+type CommentsAction =
+  | ToggleLikeAction
+  | ToggleUpdateTotalLikesAction
+  | AddCommentsAction
+  | IncrementPageAction
+  | AddAuthorsAction;
 
 const initialState: CommentsState = {
   likes: {},
   totalLikes: 0,
+  authors: {},
+  comments: [],
+  page: 1,
 };
+
+const updateLikesInReplies = (
+  comments: IComment[],
+  commentId: number,
+  isLiked: number
+): IComment[] =>
+  comments.map((comment) => {
+    if (comment.id === commentId) {
+      return { ...comment, likes: comment.likes + (isLiked ? -1 : 1) };
+    }
+
+    if (comment.replies && comment.replies.length > 0) {
+      return {
+        ...comment,
+        replies: updateLikesInReplies(comment.replies, commentId, isLiked),
+      };
+    }
+
+    return comment;
+  });
 
 const reducer = (
   state: CommentsState,
@@ -43,17 +89,44 @@ const reducer = (
       const newTotalLikes = isLiked
         ? state.totalLikes - 1
         : state.totalLikes + 1;
+      const updatedComments = updateLikesInReplies(
+        state.comments,
+        commentId,
+        isLiked
+      );
+
       return {
         ...state,
         likes: newLikes,
         totalLikes: newTotalLikes,
+        comments: updatedComments,
       };
     }
     case 'UPDATE_TOTAL_LIKES': {
       const { totalLikes } = action.payload;
       return {
         ...state,
-        totalLikes: state.totalLikes + totalLikes,
+        totalLikes: totalLikes,
+      };
+    }
+    case 'ADD_COMMENTS': {
+      const { comments } = action.payload;
+      return {
+        ...state,
+        comments: [...state.comments, ...comments],
+      };
+    }
+    case 'ADD_AUTHORS': {
+      const { authors } = action.payload;
+      return {
+        ...state,
+        authors,
+      };
+    }
+    case 'INCREMENT_PAGE': {
+      return {
+        ...state,
+        page: state.page + 1,
       };
     }
     default:

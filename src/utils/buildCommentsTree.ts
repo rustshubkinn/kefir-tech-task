@@ -4,7 +4,7 @@ export const buildCommentsTree = (comments: IComment[]): IComment[] => {
   const commentsById: { [id: number]: IComment } = {};
 
   comments.forEach((comment) => {
-    commentsById[comment.id] = { ...comment, replies: [] };
+    commentsById[comment.id] = { ...comment, replies: [], nestingLevel: 0 };
   });
 
   Object.values(commentsById).forEach((comment) => {
