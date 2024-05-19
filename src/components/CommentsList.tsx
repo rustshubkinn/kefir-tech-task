@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import Comment from './Comment';
 import styled from 'styled-components';
 import { Likes } from './Likes';
 import { useComments } from 'src/hooks/useComments';
 import { Loader } from './Loader';
 import { useAuthors } from 'src/hooks/useAuthors';
+import { LoadMoreButton } from './LoadMoreButton';
 
 const CommentsListSection = styled.section`
   padding: 2rem 0;
@@ -44,23 +45,6 @@ const ErrorMessage = styled.p`
   color: #d44f4f;
 `;
 
-const LoadMoreButtonWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-`;
-
-const LoadMoreButton = styled.button`
-  width: 234px;
-  height: 36px;
-  color: #fff;
-  background: #313439;
-  border-radius: 4px;
-  border: none;
-  text-align: center;
-  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
-`;
-
 const CommentsList: React.FC = () => {
   const {
     authors,
@@ -88,20 +72,6 @@ const CommentsList: React.FC = () => {
 
   const isLastPage = page === response?.pagination.total_pages;
 
-  const renderButtonText = useMemo(() => {
-    if (isError) {
-      return 'Попробовать еще раз';
-    }
-
-    if (isLoading) {
-      return 'Загрузка комментариев...';
-    } else if (isLastPage) {
-      return 'Комментариев больше нет';
-    } else {
-      return 'Загрузить еще';
-    }
-  }, [isError, isLastPage, isLoading]);
-
   return isLoading ? (
     <Loader />
   ) : (
@@ -124,12 +94,12 @@ const CommentsList: React.FC = () => {
           Произошла ошибка: {errorMessage || 'Unknown error'}
         </ErrorMessage>
       )}
-
-      <LoadMoreButtonWrapper>
-        <LoadMoreButton onClick={loadMore} disabled={isFetching || isLastPage}>
-          {renderButtonText}
-        </LoadMoreButton>
-      </LoadMoreButtonWrapper>
+      <LoadMoreButton
+        loadMore={loadMore}
+        isError={isError}
+        isLoading={isLoading || isFetching}
+        isLastPage={isLastPage}
+      />
     </CommentsListSection>
   );
 };
