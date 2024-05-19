@@ -2,8 +2,9 @@ import React, { useMemo } from 'react';
 import Comment from './Comment';
 import styled from 'styled-components';
 import { Likes } from './Likes';
-import { useCommentsAndAuthors } from 'src/hooks/useCommentsAndAuthors';
+import { useComments } from 'src/hooks/useComments';
 import { Loader } from './Loader';
+import { useAuthors } from 'src/hooks/useAuthors';
 
 const CommentsListSection = styled.section`
   padding: 2rem 0;
@@ -62,17 +63,28 @@ const LoadMoreButton = styled.button`
 
 const CommentsList: React.FC = () => {
   const {
-    comments,
     authors,
-    isLoading,
-    isError,
-    isFetching,
-    error,
+    isAuthorsLoading,
+    isAuthorsFetching,
+    isAuthorsError,
+    error: authorsError,
+  } = useAuthors();
+  const {
+    comments,
+    isCommentsLoading,
+    isCommentsError,
+    isCommentsFetching,
+    error: commentsError,
     loadMore,
     page,
     response,
     totalLikes,
-  } = useCommentsAndAuthors();
+  } = useComments();
+
+  const isError = isCommentsError || isAuthorsError;
+  const isFetching = isCommentsFetching || isAuthorsFetching;
+  const isLoading = isCommentsLoading || isAuthorsLoading;
+  const errorMessage = commentsError?.message || authorsError?.message;
 
   const isLastPage = page === response?.pagination.total_pages;
 
@@ -109,7 +121,7 @@ const CommentsList: React.FC = () => {
         ))}
       {isError && (
         <ErrorMessage>
-          Error loading comments: {error ? error.message : 'Unknown error'}
+          Произошла ошибка: {errorMessage || 'Unknown error'}
         </ErrorMessage>
       )}
 

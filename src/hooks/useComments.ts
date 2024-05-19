@@ -1,28 +1,26 @@
 import { useEffect } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import getCommentsRequest from 'src/api/comments/getCommentsRequest';
-import getAuthorsRequest from 'src/api/authors/getAuthorsRequest';
-import { IComment, ICommentsResponse, IAuthor, IAuthors } from 'src/types';
-import { useComments } from 'src/context/CommentsContext';
+import { IComment, ICommentsResponse } from 'src/types';
+import { useCommentsContext } from 'src/context/CommentsContext';
 import { buildCommentsTree } from 'src/utils/buildCommentsTree';
 
-interface UseCommentsAndAuthorsResult {
+interface UseCommentsResult {
   comments: IComment[];
-  authors: IAuthors;
-  isLoading: boolean;
-  isError: boolean;
-  isFetching: boolean;
+  isCommentsLoading: boolean;
+  isCommentsError: boolean;
+  isCommentsFetching: boolean;
   error: Error | null;
   loadMore: () => void;
-  refetch: () => void;
+  refetchComments: () => void;
   page: number;
   response: ICommentsResponse | undefined;
   totalLikes: number;
 }
 
-export const useCommentsAndAuthors = (): UseCommentsAndAuthorsResult => {
-  const { state, dispatch } = useComments();
-  const { authors, comments, page } = state;
+export const useComments = (): UseCommentsResult => {
+  const { state, dispatch } = useCommentsContext();
+  const { comments, page } = state;
 
   const {
     data: commentsResponse,
@@ -34,19 +32,6 @@ export const useCommentsAndAuthors = (): UseCommentsAndAuthorsResult => {
   } = useQuery<ICommentsResponse, Error>({
     queryKey: ['comments', page],
     queryFn: () => getCommentsRequest(page),
-    placeholderData: keepPreviousData,
-  });
-
-  const {
-    data: authorsResponse,
-    error: authorsError,
-    isLoading: isAuthorsLoading,
-    isFetching: isAuthorsFetching,
-    isError: isAuthorsError,
-    refetch: refetchAuthors,
-  } = useQuery<IAuthor[], Error>({
-    queryKey: ['authors'],
-    queryFn: () => getAuthorsRequest(),
     placeholderData: keepPreviousData,
   });
 
@@ -75,19 +60,6 @@ export const useCommentsAndAuthors = (): UseCommentsAndAuthorsResult => {
     }
   }, [commentsResponse, dispatch]);
 
-  useEffect(() => {
-    if (authorsResponse) {
-      const normalizedAuthors = authorsResponse.reduce((acc, author) => {
-        acc[author.id] = author;
-        return acc;
-      }, {} as { [key: number]: IAuthor });
-      dispatch({
-        type: 'ADD_AUTHORS',
-        payload: { authors: normalizedAuthors },
-      });
-    }
-  }, [authorsResponse, dispatch]);
-
   const loadMore = () => {
     dispatch({ type: 'INCREMENT_PAGE' });
     refetchComments();
@@ -95,16 +67,12 @@ export const useCommentsAndAuthors = (): UseCommentsAndAuthorsResult => {
 
   return {
     comments,
-    authors,
-    isLoading: isCommentsLoading || isAuthorsLoading,
-    isError: isCommentsError || isAuthorsError,
-    isFetching: isCommentsFetching || isAuthorsFetching,
-    error: commentsError || authorsError,
+    isCommentsLoading: isCommentsLoading,
+    isCommentsError: isCommentsError,
+    isCommentsFetching: isCommentsFetching,
+    error: commentsError,
     loadMore,
-    refetch: () => {
-      refetchComments();
-      refetchAuthors();
-    },
+    refetchComments,
     page,
     response: commentsResponse,
     totalLikes: state.totalLikes,

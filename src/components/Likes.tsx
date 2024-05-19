@@ -4,7 +4,7 @@ import { ReactComponent as DisabledHeart } from '../assets/icons/disabledheart.s
 import { ReactComponent as FilledHeart } from '../assets/icons/filledheart.svg';
 import { addSpacingForNumbers } from 'src/helpers/addSpacingForNumbers';
 import { useCallback, useMemo } from 'react';
-import { useComments } from 'src/context/CommentsContext';
+import { useCommentsContext } from 'src/context/CommentsContext';
 
 const LikesWrapper = styled.div`
   display: flex;
@@ -42,7 +42,7 @@ interface LikesProps {
 }
 
 export const Likes = ({ likesCount, commentId, disabled }: LikesProps) => {
-  const { state, dispatch } = useComments();
+  const { state, dispatch } = useCommentsContext();
   const isLiked = commentId !== undefined && state.likes[commentId];
 
   const toggleLike = useCallback(() => {
