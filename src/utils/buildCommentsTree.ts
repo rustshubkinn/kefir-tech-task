@@ -1,5 +1,8 @@
 import { IComment } from 'src/types';
 
+const sortByDate = (a: IComment, b: IComment) =>
+  new Date(b.created).getTime() - new Date(a.created).getTime();
+
 export const buildCommentsTree = (comments: IComment[]): IComment[] => {
   const commentsById: Map<number, IComment> = new Map();
 
@@ -13,9 +16,7 @@ export const buildCommentsTree = (comments: IComment[]): IComment[] => {
       parent.replies!.push(comment);
       comment.nestingLevel = parent.nestingLevel! + 1;
 
-      parent.replies!.sort(
-        (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()
-      );
+      parent.replies!.sort(sortByDate);
     }
   });
 
@@ -23,9 +24,7 @@ export const buildCommentsTree = (comments: IComment[]): IComment[] => {
     (comment) => comment.parent === null
   );
 
-  rootComments.sort(
-    (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()
-  );
+  rootComments.sort(sortByDate);
 
   return rootComments;
 };
