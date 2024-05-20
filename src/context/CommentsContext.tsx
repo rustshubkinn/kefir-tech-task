@@ -5,12 +5,12 @@ import {
   ReactNode,
   Dispatch,
 } from 'react';
-import { IAuthors, IComment } from 'src/types';
+import { IAuthor, IComment } from 'src/types';
 
 interface CommentsState {
   likes: { [commentId: string]: number };
   totalLikes: number;
-  authors: IAuthors;
+  authors: Map<number, IAuthor>;
   comments: IComment[];
   page: number;
 }
@@ -32,7 +32,7 @@ interface AddCommentsAction {
 
 interface AddAuthorsAction {
   type: 'ADD_AUTHORS';
-  payload: { authors: IAuthors };
+  payload: { authors: Map<number, IAuthor> };
 }
 
 interface IncrementPageAction {
@@ -49,7 +49,7 @@ type CommentsAction =
 const initialState: CommentsState = {
   likes: {},
   totalLikes: 0,
-  authors: {},
+  authors: new Map(),
   comments: [],
   page: 1,
 };
@@ -118,9 +118,15 @@ const reducer = (
     }
     case 'ADD_AUTHORS': {
       const { authors } = action.payload;
+      const newAuthors = new Map(state.authors);
+
+      authors.forEach((author: IAuthor) => {
+        newAuthors.set(author.id, author);
+      });
+
       return {
         ...state,
-        authors,
+        authors: newAuthors,
       };
     }
     case 'INCREMENT_PAGE': {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { IAuthors, IComment } from 'src/types';
+import { IAuthor, IComment } from 'src/types';
 import { Likes } from './Likes';
 import styled from 'styled-components';
 import { formatCommentCreateDate } from 'src/helpers/formatCommentCreateDate';
@@ -116,22 +116,21 @@ const Text = styled.p`
 
 interface CommentProps {
   comment: IComment;
-  authors: IAuthors;
+  authors: Map<number, IAuthor>;
 }
 
 const Comment: React.FC<CommentProps> = ({ comment, authors }) => {
-  if (!comment) return null;
-
-  if (!authors[comment.author]) return null;
+  const author = authors.get(comment.author);
+  if (!author) return null;
 
   return (
     <Wrapper $nestedLevel={comment.nestingLevel || 0}>
       <Card>
-        <AuthorAvatar src={authors[comment.author].avatar} />
+        <AuthorAvatar src={author.avatar} />
         <Body>
           <Header>
             <Info>
-              {authors[comment.author].name}
+              {author.name}
               <InfoDate>{formatCommentCreateDate(comment.created)}</InfoDate>
             </Info>
             <Likes

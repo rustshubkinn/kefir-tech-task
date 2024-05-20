@@ -1,20 +1,31 @@
 import { IComment } from 'src/types';
 
 export const buildCommentsTree = (comments: IComment[]): IComment[] => {
-  const commentsById: { [id: number]: IComment } = {};
+  const commentsById: Map<number, IComment> = new Map();
 
   comments.forEach((comment) => {
-    commentsById[comment.id] = { ...comment, replies: [], nestingLevel: 0 };
+    commentsById.set(comment.id, { ...comment, replies: [], nestingLevel: 0 });
   });
 
-  Object.values(commentsById).forEach((comment) => {
-    if (comment.parent !== null && commentsById[comment.parent]) {
-      commentsById[comment.parent].replies!.push(comment);
-      comment.nestingLevel = commentsById[comment.parent].nestingLevel! + 1;
+  Array.from(commentsById.values()).forEach((comment) => {
+    const parent = commentsById.get(comment.parent!);
+    if (comment.parent !== null && parent) {
+      parent.replies!.push(comment);
+      comment.nestingLevel = parent.nestingLevel! + 1;
+
+      parent.replies!.sort(
+        (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()
+      );
     }
   });
 
-  return Object.values(commentsById).filter(
+  const rootComments = Array.from(commentsById.values()).filter(
     (comment) => comment.parent === null
   );
+
+  rootComments.sort(
+    (a, b) => new Date(b.created).getTime() - new Date(a.created).getTime()
+  );
+
+  return rootComments;
 };

@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import getAuthorsRequest from 'src/api/authors/getAuthorsRequest';
-import { IAuthor, IAuthors } from 'src/types';
+import { IAuthor } from 'src/types';
 import { useCommentsContext } from 'src/context/CommentsContext';
 
 interface UseAuthorsResult {
-  authors: IAuthors;
+  authors: Map<number, IAuthor>;
   isAuthorsLoading: boolean;
   isAuthorsError: boolean;
   isAuthorsFetching: boolean;
@@ -30,13 +30,13 @@ export const useAuthors = (): UseAuthorsResult => {
 
   useEffect(() => {
     if (authorsResponse) {
-      const normalizedAuthors = authorsResponse.reduce((acc, author) => {
-        acc[author.id] = author;
-        return acc;
-      }, {} as { [key: number]: IAuthor });
+      const authorsMap = new Map();
+      authorsResponse.forEach((author) => {
+        return authorsMap.set(author.id, author);
+      });
       dispatch({
         type: 'ADD_AUTHORS',
-        payload: { authors: normalizedAuthors },
+        payload: { authors: authorsMap },
       });
     }
   }, [authorsResponse, dispatch]);
