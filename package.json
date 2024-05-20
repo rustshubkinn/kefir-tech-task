@@ -2,6 +2,7 @@
   "name": "technical_task",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://rustshubkinn.github.io/kefir-tech-task/",
   "scripts": {
     "start": "react-scripts start",
     "predeploy": "npm run build",
