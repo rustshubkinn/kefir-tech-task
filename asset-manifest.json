@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.js": "/kefir-tech-task/static/js/main.9b72771d.js",
+    "static/media/background.png": "/kefir-tech-task/static/media/background.7cbb4644efc7c57bf5d9.png",
+    "static/media/han-solo.jpg": "/kefir-tech-task/static/media/han-solo.84705bac66e252072c67.jpg",
+    "static/media/filledheart.svg": "/kefir-tech-task/static/media/filledheart.ec3e9e66434b77be602a255c9faf17ac.svg",
+    "static/media/disabledheart.svg": "/kefir-tech-task/static/media/disabledheart.104d7fa95e36c483908db2d211f96e3f.svg",
+    "static/media/heart.svg": "/kefir-tech-task/static/media/heart.dcb8a968baba15cd0a67dfd683fe3ec0.svg",
+    "index.html": "/kefir-tech-task/index.html",
+    "main.9b72771d.js.map": "/kefir-tech-task/static/js/main.9b72771d.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.9b72771d.js"
+  ]
+}
